@@ -4,17 +4,17 @@ A lightweight Express backend skeleton configured for local development.
 
 ## Quickstart
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Copy the environment template and adjust values as needed:
+1. Copy the environment template and adjust the values if needed:
    ```bash
    cp .env.example .env
    ```
-3. Run the database migrations to set up the local SQLite database:
+2. Install dependencies:
    ```bash
-   npm run migrate
+   npm install
+   ```
+3. Apply the database migrations to create the local SQLite database:
+   ```bash
+   npx prisma migrate dev
    ```
 4. Seed the database with demo data:
    ```bash
@@ -24,47 +24,68 @@ A lightweight Express backend skeleton configured for local development.
    ```bash
    npm run dev
    ```
+6. Open the interactive API explorer at [http://localhost:3000/docs](http://localhost:3000/docs) to review available endpoints, schemas, and example payloads. The raw OpenAPI document is also available at [http://localhost:3000/docs.json](http://localhost:3000/docs.json).
 
-The server listens on the port defined in your `.env` file (defaults to `3000`).
+Keep the server running while you experiment with the endpoints. The flow below demonstrates the core features end-to-end.
 
-## Database
+### Demo curl flow
 
-Prisma is configured to use SQLite with the connection string defined in `DATABASE_URL`. Running the migrations will create `dev.db` in the project root, and the seed script will insert a user, project, and track for quick testing.
+```bash
+# Health check
+curl http://localhost:3000/health
+
+# Sign up a new user
+curl -X POST http://localhost:3000/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"Password123!"}'
+
+# Log in and capture the returned token
+TOKEN=$(curl -s -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"Password123!"}' | jq -r '.token')
+
+echo "Token: $TOKEN"
+
+# Create a project
+curl -X POST http://localhost:3000/projects \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My First Project"}'
+
+# List projects
+curl http://localhost:3000/projects \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Replace the email address if you re-run the flow, and ensure `jq` is installed to capture the token from the login response.
+
+## API documentation
+
+- Interactive Swagger UI: [http://localhost:3000/docs](http://localhost:3000/docs)
+- OpenAPI JSON: [http://localhost:3000/docs.json](http://localhost:3000/docs.json)
+
+The documentation covers health, authentication, project, track, and upload endpoints with example payloads to speed up demos.
+
+## Testing
+
+Run the Jest test suite (uses an isolated SQLite database) with:
+
+```bash
+npm test
+```
 
 ## Available scripts
 
-- `npm run dev` &mdash; start the server in watch mode with nodemon.
-- `npm start` &mdash; start the server with Node.js.
-- `npm run lint` &mdash; run ESLint across the project.
-- `npm run format` &mdash; format files with Prettier.
-- `npm run migrate` &mdash; run Prisma migrations (`prisma migrate dev --name init`).
-- `npm run generate` &mdash; regenerate the Prisma client.
-- `npm run seed` &mdash; populate the database with demo data.
+- `npm run dev` — start the server in watch mode with nodemon.
+- `npm start` — start the server with Node.js.
+- `npm run lint` — run ESLint across the project.
+- `npm run format` — format files with Prettier.
+- `npm run migrate` — run Prisma migrations (`prisma migrate dev --name init`).
+- `npm run generate` — regenerate the Prisma client.
+- `npm run seed` — populate the database with demo data.
+- `npm test` — run the Jest test suite.
+- `npm run test:watch` — run tests in watch mode.
 
-## Endpoints
+## Database
 
-- `GET /health` &mdash; health check endpoint returning `{ "status": "ok" }`.
-- `POST /auth/signup` &mdash; create a new user with an email/password and return a JWT.
-- `POST /auth/login` &mdash; authenticate an existing user and return a JWT.
-- `GET /me` &mdash; return the authenticated user's `id` and `email`; requires a Bearer token.
-
-### Example requests
-
-```bash
-curl -X POST http://localhost:3000/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"password123"}'
-```
-
-```bash
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"password123"}'
-```
-
-```bash
-curl http://localhost:3000/me \
-  -H "Authorization: Bearer <token>"
-```
-
-Replace `<token>` with the value returned from the signup or login response. Tokens expire after 15 minutes.
+Prisma is configured to use SQLite with the connection string defined in `DATABASE_URL`. Running the migrations will create `dev.db` in the project root (ignored by Git), and the seed script inserts a user, project, and track for quick testing.
