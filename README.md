@@ -44,3 +44,27 @@ Prisma is configured to use SQLite with the connection string defined in `DATABA
 ## Endpoints
 
 - `GET /health` &mdash; health check endpoint returning `{ "status": "ok" }`.
+- `POST /auth/signup` &mdash; create a new user with an email/password and return a JWT.
+- `POST /auth/login` &mdash; authenticate an existing user and return a JWT.
+- `GET /me` &mdash; return the authenticated user's `id` and `email`; requires a Bearer token.
+
+### Example requests
+
+```bash
+curl -X POST http://localhost:3000/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123"}'
+```
+
+```bash
+curl http://localhost:3000/me \
+  -H "Authorization: Bearer <token>"
+```
+
+Replace `<token>` with the value returned from the signup or login response. Tokens expire after 15 minutes.
