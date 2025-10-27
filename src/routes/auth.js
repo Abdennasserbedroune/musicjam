@@ -38,7 +38,13 @@ const respondWithToken = (res, status, user) => {
     { expiresIn: '15m' }
   );
 
-  res.status(status).json({ token });
+  res.status(status).json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+    },
+  });
 };
 
 router.post('/signup', async (req, res, next) => {
