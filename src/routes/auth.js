@@ -25,6 +25,8 @@ const getJwtSecret = () => {
 };
 
 const normalizeEmail = (value) => value.trim().toLowerCase();
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const hasMeaningfulPassword = (value) => value.trim().length > 0;
 
 const respondWithToken = (res, status, user) => {
   const token = jwt.sign(
@@ -42,13 +44,13 @@ const respondWithToken = (res, status, user) => {
 router.post('/signup', async (req, res, next) => {
   const { email, password } = req.body || {};
 
-  if (typeof email !== 'string' || typeof password !== 'string' || password.length === 0) {
+  if (typeof email !== 'string' || typeof password !== 'string') {
     return next(createError(400, 'Email and password are required'));
   }
 
   const normalizedEmail = normalizeEmail(email);
 
-  if (!normalizedEmail) {
+  if (!normalizedEmail || !isValidEmail(normalizedEmail) || !hasMeaningfulPassword(password)) {
     return next(createError(400, 'Email and password are required'));
   }
 
@@ -75,13 +77,13 @@ router.post('/signup', async (req, res, next) => {
 router.post('/login', async (req, res, next) => {
   const { email, password } = req.body || {};
 
-  if (typeof email !== 'string' || typeof password !== 'string' || password.length === 0) {
+  if (typeof email !== 'string' || typeof password !== 'string') {
     return next(createError(400, 'Email and password are required'));
   }
 
   const normalizedEmail = normalizeEmail(email);
 
-  if (!normalizedEmail) {
+  if (!normalizedEmail || !isValidEmail(normalizedEmail) || !hasMeaningfulPassword(password)) {
     return next(createError(400, 'Email and password are required'));
   }
 

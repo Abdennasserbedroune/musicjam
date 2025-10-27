@@ -76,6 +76,20 @@ describe('API smoke tests', () => {
     expect(user).not.toBeNull();
   });
 
+  test('POST /auth/signup rejects invalid email formats', async () => {
+    await request(app)
+      .post('/auth/signup')
+      .send({ email: 'not-an-email', password: defaultPassword })
+      .expect(400);
+  });
+
+  test('POST /auth/signup rejects passwords containing only whitespace', async () => {
+    await request(app)
+      .post('/auth/signup')
+      .send({ email: uniqueEmail('signup-whitespace-password'), password: '   ' })
+      .expect(400);
+  });
+
   test('POST /auth/login authenticates an existing user', async () => {
     const email = uniqueEmail('login');
 
@@ -92,6 +106,27 @@ describe('API smoke tests', () => {
 
     const { token } = response.body || {};
     expect(token).toEqual(expect.stringMatching(/.+/));
+  });
+
+  test('POST /auth/login rejects invalid email formats', async () => {
+    await request(app)
+      .post('/auth/login')
+      .send({ email: 'not-an-email', password: defaultPassword })
+      .expect(400);
+  });
+
+  test('POST /auth/login rejects passwords containing only whitespace', async () => {
+    const email = uniqueEmail('login-whitespace-password');
+
+    await request(app)
+      .post('/auth/signup')
+      .send({ email, password: defaultPassword })
+      .expect(201);
+
+    await request(app)
+      .post('/auth/login')
+      .send({ email, password: '   ' })
+      .expect(400);
   });
 
   test('POST /projects creates a project for the authenticated user', async () => {
