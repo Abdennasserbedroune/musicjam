@@ -1,47 +1,49 @@
 {
-  "name": "project",
-  "version": "1.0.0",
-  "description": "Fast, free local backend skeleton in plain JavaScript.",
-  "main": "src/server.js",
+  "name": "musicjam",
+  "version": "0.1.0",
+  "description": "Collaborative YouTube playlists - Next.js MVP",
+  "private": true,
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "lint": "eslint .",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "format": "prettier --write .",
-    "migrate": "prisma migrate dev --name init",
-    "generate": "prisma generate",
-    "seed": "node prisma/seed.js",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
     "test": "jest",
     "test:watch": "jest --watch"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@prisma/client": "^6.18.0",
     "bcrypt": "^6.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.2",
-    "pino-http": "^10.2.0",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "next": "14.2.18",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.18",
     "jest": "^30.2.0",
-    "nodemon": "^3.1.7",
+    "jest-environment-jsdom": "^30.2.0",
+    "postcss": "^8.4.49",
     "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.9",
     "prisma": "^6.18.0",
-    "supertest": "^7.1.4"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ]
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
   }
 }
