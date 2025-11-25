@@ -1,28 +1,21 @@
-import type { Metadata } from 'next';
-import { Space_Grotesk } from 'next/font/google';
-import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
-import Navbar from '@/components/Navbar';
-
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'MusicJam - Collaborative YouTube Playlists',
-  description: 'Create and share collaborative YouTube playlists with friends',
+  title: "musicjam - Synchronized YouTube listening with friends",
+  description: "Create music jam rooms and listen to YouTube videos together in real-time with your friends",
+  keywords: ["music", "youtube", "synchronized", "listening", "social", "playlist"],
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className={spaceGrotesk.className}>
-        <AuthProvider>
-          <Navbar />
-          {children}
-        </AuthProvider>
+      <body className="antialiased">
+        {children}
       </body>
     </html>
   );
