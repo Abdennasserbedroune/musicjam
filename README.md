@@ -1,6 +1,14 @@
 # 🎵 MusicJam
 
-A collaborative YouTube playlist application built with Next.js 14. Create rooms, add YouTube videos, and chat with friends while building the perfect playlist together!
+A collaborative YouTube playlist application built with Next.js 14 (frontend) and Express (backend). Create rooms, add YouTube videos, and chat with friends while building the perfect playlist together!
+
+## Architecture
+
+This project is organized as a **monorepo** with two main applications:
+
+- **Frontend** (`apps/frontend`): Next.js 14 application with App Router
+- **Backend** (`apps/backend`): Express.js REST API with TypeScript
+- **Database**: PostgreSQL with Prisma ORM (schema at root)
 
 ## Features
 
@@ -13,108 +21,200 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 
 ## Tech Stack
 
+### Frontend
+
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Database**: Prisma ORM with SQLite (easy to swap to PostgreSQL)
-- **Authentication**: Anonymous nicknames per room (stored in localStorage)
-- **Video Metadata**: YouTube oEmbed API (no API key required)
 - **State Management**: Server Actions + Simple Polling
+
+### Backend
+
+- **Framework**: Express.js
+- **Language**: TypeScript
+- **Authentication**: JWT
+- **Real-time**: Socket.IO ready
+
+### Shared
+
+- **Database**: PostgreSQL via Prisma ORM
+- **Video Metadata**: YouTube oEmbed API (no API key required)
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18.x or 20.x
-- npm or pnpm
+- npm 9.x or higher
+- Docker (for local PostgreSQL) or PostgreSQL instance
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
 
    ```bash
    git clone <repository-url>
    cd musicjam
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
+   This will install dependencies for both frontend and backend workspaces.
+
+3. **Set up environment variables:**
 
    ```bash
    cp .env.example .env
    ```
 
-4. Generate Prisma client:
+   Update the `.env` file with your configuration. Key variables:
+   - `DATABASE_URL`: PostgreSQL connection string
+   - `JWT_SECRET`: Secret key for JWT tokens
+   - `NEXT_PUBLIC_BACKEND_URL`: Backend API URL
+   - See `.env.example` for full configuration
+
+4. **Start PostgreSQL database:**
+
+   Using Docker (recommended for local development):
+
+   ```bash
+   npm run docker:up
+   ```
+
+   Or use a cloud provider like [Neon](https://neon.tech/) or [Supabase](https://supabase.com/) and update `DATABASE_URL`.
+
+5. **Generate Prisma client:**
 
    ```bash
    npm run db:generate
    ```
 
-5. Create the database and run migrations:
+6. **Run database migrations:**
 
    ```bash
    npm run db:migrate
    ```
 
-6. Start the development server:
+7. **Start both servers:**
 
    ```bash
    npm run dev
    ```
 
-7. Open [http://localhost:3000](http://localhost:3000) in your browser
+   This starts:
+   - Frontend at [http://localhost:3000](http://localhost:3000)
+   - Backend at [http://localhost:3001](http://localhost:3001)
 
 ## Available Scripts
 
-- `npm run dev` - Start the development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+### Root Scripts (run from project root)
+
+#### Development
+
+- `npm run dev` - Start both frontend and backend in development mode
+- `npm run dev:frontend` - Start only the frontend
+- `npm run dev:backend` - Start only the backend
+
+#### Building
+
+- `npm run build` - Build both applications
+- `npm run build:frontend` - Build frontend only
+- `npm run build:backend` - Build backend only
+
+#### Production
+
+- `npm run start` - Start both applications in production mode
+- `npm run start:frontend` - Start frontend only
+- `npm run start:backend` - Start backend only
+
+#### Quality Checks
+
+- `npm run lint` - Lint all workspaces
+- `npm run lint:frontend` - Lint frontend
+- `npm run lint:backend` - Lint backend
+- `npm run type-check` - Type check all workspaces
 - `npm run format` - Format code with Prettier
 - `npm run format:check` - Check code formatting
-- `npm run type-check` - Run TypeScript type checking
+
+#### Testing
+
+- `npm run test` - Run all tests
+- `npm run test:frontend` - Run frontend tests
+- `npm run test:backend` - Run backend tests
+
+#### Database
+
 - `npm run db:generate` - Generate Prisma client
 - `npm run db:push` - Push schema changes to database
-- `npm run db:migrate` - Create and run migrations
+- `npm run db:migrate` - Create and run migrations (development)
+- `npm run db:migrate:deploy` - Run migrations (production)
 - `npm run db:studio` - Open Prisma Studio
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
+
+#### Docker
+
+- `npm run docker:up` - Start PostgreSQL container
+- `npm run docker:down` - Stop PostgreSQL container
+- `npm run docker:logs` - View PostgreSQL logs
+
+#### Utilities
+
+- `npm run clean` - Remove all node_modules and build artifacts
+- `npm run clean:install` - Clean and reinstall all dependencies
 
 ## Project Structure
 
 ```
-├── src/
-│   ├── app/              # Next.js App Router pages
-│   │   ├── api/          # API routes
-│   │   ├── room/         # Room pages
-│   │   ├── layout.tsx    # Root layout
-│   │   ├── page.tsx      # Landing page
-│   │   └── globals.css   # Global styles
-│   ├── components/       # React components
-│   ├── lib/              # Library code (Prisma, server actions)
-│   └── utils/            # Utility functions
+├── apps/
+│   ├── frontend/              # Next.js application
+│   │   ├── src/
+│   │   │   ├── app/          # Next.js App Router pages
+│   │   │   ├── components/   # React components
+│   │   │   ├── lib/          # Library code (Prisma, actions)
+│   │   │   └── utils/        # Utility functions
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   ├── next.config.js
+│   │   └── tailwind.config.js
+│   │
+│   └── backend/               # Express API
+│       ├── src/
+│       │   ├── routes/       # API routes
+│       │   ├── middleware/   # Express middleware
+│       │   └── index.ts      # Server entry point
+│       ├── package.json
+│       └── tsconfig.json
+│
 ├── prisma/
-│   └── schema.prisma     # Database schema
-└── __tests__/            # Test files
+│   └── schema.prisma          # Database schema (shared)
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml            # CI/CD pipeline
+│
+├── docker-compose.yml         # PostgreSQL container
+├── turbo.json                 # Turbo build configuration
+├── vercel.json                # Vercel deployment config
+├── tsconfig.base.json         # Base TypeScript config
+├── package.json               # Root workspace config
+└── .env.example               # Environment variables template
 ```
 
 ## Database Schema
 
 ### Room
 
-- `id`: Unique identifier
+- `id`: Unique identifier (cuid)
 - `code`: 6-character room code (e.g., "ABC123")
 - `passcodeHash`: Optional bcrypt hash of passcode
 - `createdAt`: Creation timestamp
 
 ### PlaylistItem
 
-- `id`: Unique identifier
+- `id`: Unique identifier (cuid)
 - `roomId`: Reference to Room
 - `url`: YouTube video URL
 - `title`: Video title (from oEmbed)
@@ -125,7 +225,7 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 
 ### Message
 
-- `id`: Unique identifier
+- `id`: Unique identifier (cuid)
 - `roomId`: Reference to Room
 - `author`: Nickname of message author
 - `text`: Message content
@@ -135,93 +235,120 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 
 ### Vercel (Recommended)
 
-1. Install Vercel CLI:
+This monorepo is configured for deployment to Vercel with `vercel.json`:
+
+1. **Install Vercel CLI:**
 
    ```bash
    npm i -g vercel
    ```
 
-2. Deploy:
+2. **Set environment variables in Vercel:**
+   - `DATABASE_URL` - PostgreSQL connection string
+   - `JWT_SECRET` - JWT secret key
+   - All `NEXT_PUBLIC_*` variables
 
+3. **Deploy:**
    ```bash
    vercel
    ```
 
-3. Set up PostgreSQL database (recommended for production):
-   - Use [Neon](https://neon.tech/) or [Supabase](https://supabase.com/) for free PostgreSQL
-   - Update `DATABASE_URL` in Vercel environment variables
-   - Update `prisma/schema.prisma` datasource provider to `postgresql`
-   - Run migrations: `npx prisma migrate deploy`
+The configuration automatically:
 
-### Docker
+- Deploys frontend as a Next.js app
+- Deploys backend as serverless functions
+- Routes `/api/*` to backend, everything else to frontend
 
-A Dockerfile can be added for containerized deployment. The application works well with:
+### Database Setup (Production)
 
-- Railway
-- Render
-- Fly.io
-- Any platform supporting Node.js
+Use a managed PostgreSQL service:
 
-### Database Migration (SQLite → PostgreSQL)
+- **[Neon](https://neon.tech/)**: Free PostgreSQL with generous limits
+- **[Supabase](https://supabase.com/)**: PostgreSQL + additional features
+- **[Railway](https://railway.app/)**: Easy PostgreSQL hosting
 
-1. Update `prisma/schema.prisma`:
+After creating your database:
 
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
+1. Update `DATABASE_URL` in Vercel environment variables
+2. Run migrations: `npx prisma migrate deploy`
 
-2. Set `DATABASE_URL` in `.env`:
+### Alternative Platforms
 
-   ```
-   DATABASE_URL="postgresql://user:password@host:5432/dbname"
-   ```
+The monorepo can also be deployed to:
 
-3. Create and run migrations:
+- **Railway**: Supports monorepos natively
+- **Render**: Use separate services for frontend/backend
+- **Fly.io**: Containerized deployment
+- **DigitalOcean App Platform**
+
+## Development Workflow
+
+### Making Database Changes
+
+1. Edit `prisma/schema.prisma`
+2. Create migration:
    ```bash
-   npm run db:migrate
+   npm run db:migrate -- --name descriptive_name
    ```
+3. Prisma client will be regenerated automatically
+
+### Adding Features
+
+Each workspace has its own dependencies:
+
+```bash
+# Add to frontend
+npm install <package> --workspace=@musicjam/frontend
+
+# Add to backend
+npm install <package> --workspace=@musicjam/backend
+
+# Add to both (dev dependencies)
+npm install <package> -D
+```
+
+### Running Individual Apps
+
+```bash
+# Frontend only
+cd apps/frontend
+npm run dev
+
+# Backend only
+cd apps/backend
+npm run dev
+```
 
 ## CI/CD
 
-GitHub Actions workflow runs on every PR and push to main/develop:
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every PR and push:
 
-- Linting (ESLint)
-- Format checking (Prettier)
-- Type checking (TypeScript)
-- Unit tests (Jest)
-- Build verification
+- ✅ Linting (ESLint) for both apps
+- ✅ Format checking (Prettier)
+- ✅ Type checking (TypeScript)
+- ✅ Unit tests (Jest)
+- ✅ Build verification
+- ✅ PostgreSQL integration tests
 
-## Features in Detail
+## Environment Variables
 
-### Room Creation
+See `.env.example` for a complete list. Key sections:
 
-- Generates unique 6-character room codes
-- Optional passcode protection with bcrypt hashing
-- No expiration (rooms persist until manually deleted)
+### Shared
 
-### YouTube Integration
+- `DATABASE_URL`: PostgreSQL connection
 
-- Uses YouTube oEmbed API (no API key needed)
-- Validates URLs before adding
-- Fetches video title and thumbnail automatically
-- Supports various YouTube URL formats
+### Backend
 
-### Chat System
+- `PORT`: API server port (default: 3001)
+- `JWT_SECRET`: Secret for JWT tokens
+- `FRONTEND_URL`: CORS whitelist
 
-- Simple polling mechanism (3-second intervals)
-- No WebSocket dependencies
-- Messages scoped to room
-- 500 character limit per message
+### Frontend
 
-### Playlist Management
-
-- Drag-and-drop reordering
-- Remove individual items
-- Clear entire playlist
-- Persistent ordering
+- `NEXT_PUBLIC_BACKEND_URL`: Backend API endpoint
+- `NEXT_PUBLIC_SOCKET_URL`: Socket.IO endpoint (future)
+- `NEXT_PUBLIC_APP_URL`: App URL for metadata
 
 ## Browser Support
 
@@ -234,9 +361,48 @@ GitHub Actions workflow runs on every PR and push to main/develop:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes in the appropriate workspace
+4. Run checks: `npm run lint && npm run type-check && npm test`
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+## Troubleshooting
+
+### Port already in use
+
+```bash
+# Kill process on port 3000 (frontend)
+lsof -ti:3000 | xargs kill -9
+
+# Kill process on port 3001 (backend)
+lsof -ti:3001 | xargs kill -9
+```
+
+### Database connection errors
+
+```bash
+# Check if PostgreSQL is running
+npm run docker:logs
+
+# Restart database
+npm run docker:down && npm run docker:up
+
+# Verify connection in .env file
+```
+
+### Prisma Client out of sync
+
+```bash
+npm run db:generate
+# Restart your IDE/editor
+```
+
+### Workspace installation issues
+
+```bash
+npm run clean:install
+```
 
 ## License
 
@@ -247,3 +413,4 @@ MIT
 - YouTube oEmbed API for metadata
 - Next.js team for the amazing framework
 - Prisma for the excellent ORM
+- Express.js for the robust backend framework
