@@ -1,61 +1,52 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
-@layer base {
-  body {
-    @apply bg-gray-900 text-gray-100;
+:root {
+  --background: #020617;
+  --foreground: #f1f5f9;
+  --neon-purple: #9333ea;
+  --neon-cyan: #06b6d4;
+  --neon-pink: #ec4899;
+  --slate-950: #020617;
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-pink: var(--neon-pink);
+  --color-slate-950: var(--slate-950);
+  --color-slate-900: var(--slate-900);
+  --color-slate-800: var(--slate-800);
+  --color-slate-700: var(--slate-700);
+  --font-sans: 'Space Grotesk', system-ui, sans-serif;
+}
+
+* {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }
 
-@layer components {
-  .neon-text {
-    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor;
-  }
-
-  .neon-border {
-    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
-  }
-
-  .neon-glow {
-    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
-  }
-
-  .gradient-text {
-    background: linear-gradient(135deg, #A855F7, #EC4899, #06B6D4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .floating-label {
-    @apply absolute left-3 top-3 text-gray-400 transition-all duration-200 pointer-events-none;
-  }
-
-  .floating-label-active {
-    @apply text-xs -translate-y-5 text-neon-purple;
-  }
-
-  .input-neon {
-    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-4 py-3 w-full transition-all duration-200;
-    @apply focus:outline-none focus:border-neon-purple focus:ring-2 focus:ring-neon-purple/50;
-  }
-}
-
-@layer utilities {
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-gray-800;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-700 rounded;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-600;
-  }
+.neon-glow {
+  animation: glow 2s ease-in-out infinite;
 }

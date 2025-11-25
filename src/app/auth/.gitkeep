@@ -1,0 +1,9 @@
+# Authentication Pages
+
+Place authentication-related pages here.
+
+Examples:
+- login/page.tsx
+- signup/page.tsx
+- callback/route.ts
+- reset-password/page.tsx

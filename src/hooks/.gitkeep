@@ -1,0 +1,10 @@
+# Custom React Hooks
+
+Place your custom React hooks here.
+
+Examples:
+- useSupabase.ts
+- useRoom.ts
+- usePlayback.ts
+- useChat.ts
+- useAuth.ts

@@ -1,0 +1,9 @@
+# TypeScript Type Definitions
+
+Place your TypeScript types and interfaces here.
+
+Examples:
+- database.types.ts (Supabase generated types)
+- room.types.ts
+- user.types.ts
+- playback.types.ts
