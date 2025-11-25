@@ -1,145 +1,403 @@
 # MusicJam Quick Start Guide
 
-## Initial Setup (First Time Only)
+## 🚀 First Time Setup
+
+### 1. Install Dependencies
 
 ```bash
-# 1. Install dependencies
 npm install
+```
 
-# 2. Copy environment file
+This installs dependencies for the entire monorepo (frontend, backend, and root).
+
+### 2. Set Up Environment
+
+```bash
 cp .env.example .env
+```
 
-# 3. Generate Prisma client
+Review and update `.env` if needed. The defaults work for local development.
+
+### 3. Start PostgreSQL Database
+
+Using Docker (recommended):
+
+```bash
+npm run docker:up
+```
+
+Or use a cloud database (Neon, Supabase, etc.) and update `DATABASE_URL` in `.env`.
+
+### 4. Set Up Database
+
+```bash
+# Generate Prisma client
 npm run db:generate
 
-# 4. Run database migrations
+# Run migrations
 npm run db:migrate
 ```
 
-## Daily Development
+### 5. Start Development Servers
 
 ```bash
-# Start development server
+npm run dev
+```
+
+This starts both:
+
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:3001
+
+That's it! 🎉
+
+---
+
+## 📅 Daily Development
+
+```bash
+# Start both servers
 npm run dev
 
-# Open http://localhost:3000 in your browser
+# Or start them individually:
+npm run dev:frontend  # Frontend only
+npm run dev:backend   # Backend only
 ```
 
-## Before Committing
+---
+
+## ✅ Before Committing
+
+Run all checks:
 
 ```bash
-# Run all checks
-npm run lint          # ESLint
-npm run type-check    # TypeScript
-npm test              # Jest tests
-npm run format        # Format code
-
-# Or run all at once:
-npm run lint && npm run type-check && npm test && npm run format:check
+npm run lint
+npm run type-check
+npm test
+npm run format:check
 ```
 
-## Common Tasks
+Or fix issues automatically:
 
-### View Database
+```bash
+npm run format  # Auto-format code
+```
+
+---
+
+## 🗄️ Common Database Tasks
+
+### View Database in Browser
 
 ```bash
 npm run db:studio
-# Opens Prisma Studio at http://localhost:5555
+# Opens at http://localhost:5555
 ```
+
+### Add a New Field to Schema
+
+1. Edit `prisma/schema.prisma`
+2. Create migration:
+   ```bash
+   npm run db:migrate -- --name add_new_field
+   ```
+3. Prisma client regenerates automatically
 
 ### Reset Database
 
 ```bash
-rm dev.db
+# Stop database
+npm run docker:down
+
+# Start fresh
+npm run docker:up
 npm run db:migrate
 ```
 
-### Add a New Database Field
+### Check Docker Logs
 
-1. Edit `prisma/schema.prisma`
-2. Run `npm run db:migrate -- --name descriptive_name`
-3. Restart dev server
+```bash
+npm run docker:logs
+```
 
-### Build for Production
+---
+
+## 📦 Working with Workspaces
+
+### Install Package in Frontend
+
+```bash
+npm install <package> --workspace=@musicjam/frontend
+```
+
+### Install Package in Backend
+
+```bash
+npm install <package> --workspace=@musicjam/backend
+```
+
+### Install Root-Level Package
+
+```bash
+npm install <package>
+```
+
+---
+
+## 🏗️ Building
+
+### Build Everything
 
 ```bash
 npm run build
-npm start
 ```
 
-## Project Structure Quick Reference
-
-```
-src/
-├── app/              # Pages and API routes
-├── components/       # React components (client-side)
-├── lib/              # Server actions and Prisma
-└── utils/            # Pure utility functions
-```
-
-## Key Files
-
-- `src/lib/actions.ts` - All server actions (mutations)
-- `src/lib/prisma.ts` - Database client
-- `src/utils/youtube.ts` - YouTube URL parsing and oEmbed
-- `src/utils/room.ts` - Room code generation and passcode hashing
-- `prisma/schema.prisma` - Database schema
-
-## Testing
+### Build Individual Apps
 
 ```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode
+npm run build:frontend
+npm run build:backend
 ```
 
-## Troubleshooting
-
-### Port 3000 already in use
+### Test Production Build
 
 ```bash
-# Kill the process
+npm run build
+npm run start  # Both servers in production mode
+```
+
+---
+
+## 🧪 Testing
+
+### Run All Tests
+
+```bash
+npm test
+```
+
+### Run Frontend Tests
+
+```bash
+npm run test:frontend
+```
+
+### Run Backend Tests
+
+```bash
+npm run test:backend
+```
+
+### Watch Mode
+
+```bash
+cd apps/frontend
+npm run test:watch
+```
+
+---
+
+## 📂 Project Structure at a Glance
+
+```
+apps/
+├── frontend/        # Next.js app
+│   └── src/
+│       ├── app/    # Pages & API routes
+│       ├── components/
+│       ├── lib/    # Server actions
+│       └── utils/
+│
+└── backend/         # Express API
+    └── src/
+        ├── routes/
+        ├── middleware/
+        └── index.ts
+
+prisma/
+└── schema.prisma    # Shared database schema
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Port Already in Use
+
+```bash
+# Frontend (port 3000)
 lsof -ti:3000 | xargs kill -9
+
+# Backend (port 3001)
+lsof -ti:3001 | xargs kill -9
 ```
 
-### Prisma Client out of sync
+### Database Connection Error
+
+```bash
+# Check if PostgreSQL is running
+npm run docker:logs
+
+# Restart database
+npm run docker:down
+npm run docker:up
+```
+
+### Prisma Client Out of Sync
 
 ```bash
 npm run db:generate
+# Then restart your editor/IDE
 ```
 
-### TypeScript errors after schema change
+### TypeScript Errors After Package Install
 
 ```bash
+# Restart TypeScript server in your editor
+# Or regenerate Prisma client
 npm run db:generate
-# Restart your IDE/editor
 ```
 
-## URLs When Running
+### Workspace Issues
 
-- **App**: http://localhost:3000
+```bash
+# Clean everything and reinstall
+npm run clean:install
+```
+
+### Module Not Found (Frontend)
+
+If you see module errors in frontend, ensure paths in `tsconfig.json` are correct:
+
+```json
+{
+  "paths": {
+    "@/*": ["./src/*"]
+  }
+}
+```
+
+---
+
+## 🌐 URLs When Running
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **Backend Health**: http://localhost:3001/health
 - **Prisma Studio**: http://localhost:5555 (when running `npm run db:studio`)
 
-## Environment Variables
+---
 
-Only one required:
+## 📝 Key Files to Know
 
-- `DATABASE_URL` - Database connection string (default: `file:./dev.db`)
+### Configuration
 
-## Production Deployment
+- `package.json` - Root workspace config
+- `apps/frontend/package.json` - Frontend dependencies
+- `apps/backend/package.json` - Backend dependencies
+- `.env` - Environment variables
+- `tsconfig.base.json` - Base TypeScript config
 
-See README.md for full deployment instructions.
+### Code
 
-Quick version:
+- `apps/frontend/src/lib/actions.ts` - Server actions
+- `apps/frontend/src/lib/prisma.ts` - Database client (frontend)
+- `apps/backend/src/index.ts` - API server entry
+- `apps/backend/src/routes/health.ts` - Health check endpoint
+- `prisma/schema.prisma` - Database schema
 
-1. Set up PostgreSQL database (Neon, Supabase, etc.)
-2. Update `DATABASE_URL` environment variable
-3. Change Prisma provider to `postgresql` in schema
-4. Run migrations: `npx prisma migrate deploy`
-5. Deploy to Vercel/Railway/Render
+### Tools
 
-## Need Help?
+- `docker-compose.yml` - Local PostgreSQL
+- `turbo.json` - Build orchestration
+- `vercel.json` - Deployment config
+- `.github/workflows/ci.yml` - CI/CD pipeline
 
-- Check `README.md` for full documentation
-- Check `IMPLEMENTATION.md` for technical details
-- Review Next.js 14 docs: https://nextjs.org/docs
-- Review Prisma docs: https://www.prisma.io/docs
+---
+
+## 🚢 Deployment Quick Reference
+
+### Vercel
+
+```bash
+vercel
+```
+
+Make sure to set environment variables in Vercel dashboard:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `NEXT_PUBLIC_BACKEND_URL`
+- `NEXT_PUBLIC_SOCKET_URL`
+
+### Database (Production)
+
+1. Create PostgreSQL on [Neon](https://neon.tech/) or [Supabase](https://supabase.com/)
+2. Update `DATABASE_URL` in Vercel
+3. Run migrations:
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+---
+
+## 💡 Pro Tips
+
+1. **Use `turbo` for faster builds:**
+
+   ```bash
+   npx turbo build
+   ```
+
+2. **Run specific workspace script:**
+
+   ```bash
+   npm run dev --workspace=@musicjam/frontend
+   ```
+
+3. **Check all workspace package versions:**
+
+   ```bash
+   npm list --workspaces
+   ```
+
+4. **Format only changed files:**
+
+   ```bash
+   git diff --name-only | grep -E '\.(ts|tsx|js|jsx)$' | xargs prettier --write
+   ```
+
+5. **Database schema visualization:**
+   ```bash
+   npm run db:studio
+   ```
+
+---
+
+## 📚 More Information
+
+- Full docs: See `README.md`
+- Implementation details: See `IMPLEMENTATION.md`
+- Next.js docs: https://nextjs.org/docs
+- Express docs: https://expressjs.com/
+- Prisma docs: https://www.prisma.io/docs
+
+---
+
+## 🆘 Need Help?
+
+Check the logs:
+
+```bash
+# Frontend logs (in terminal where you ran npm run dev)
+# Backend logs (same terminal, different color)
+# Docker logs
+npm run docker:logs
+```
+
+Still stuck? Check:
+
+1. `.env` file is configured correctly
+2. PostgreSQL is running
+3. Dependencies are installed (`npm install`)
+4. Prisma client is generated (`npm run db:generate`)
