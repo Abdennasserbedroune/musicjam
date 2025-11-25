@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
@@ -10,22 +10,34 @@ export async function GET(
   const since = searchParams.get('since');
 
   try {
-    const room = await prisma.room.findUnique({
-      where: { code: code.toUpperCase() },
-    });
+    const supabase = await createClient();
+
+    const { data: room } = await supabase
+      .from('rooms')
+      .select('id')
+      .eq('code', code.toUpperCase())
+      .single();
 
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 });
     }
 
-    const messages = await prisma.message.findMany({
-      where: {
-        roomId: room.id,
-        ...(since ? { createdAt: { gt: new Date(since) } } : {}),
-      },
-      orderBy: { createdAt: 'asc' },
-      take: 100,
-    });
+    let query = supabase
+      .from('messages')
+      .select('*')
+      .eq('room_id', room.id)
+      .order('created_at', { ascending: true })
+      .limit(100);
+
+    if (since) {
+      query = query.gt('created_at', new Date(since).toISOString());
+    }
+
+    const { data: messages, error } = await query;
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({ messages });
   } catch (error) {

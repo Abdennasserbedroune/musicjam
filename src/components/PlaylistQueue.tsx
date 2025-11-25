@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PlaylistItem } from '@prisma/client';
+import { PlaylistItem } from '@/lib/types';
 import {
   removePlaylistItem,
   reorderPlaylistItems,
@@ -101,9 +101,9 @@ export default function PlaylistQueue({
               {index + 1}
             </div>
 
-            {item.thumbnailUrl && (
+            {item.thumbnail_url && (
               <Image
-                src={item.thumbnailUrl}
+                src={item.thumbnail_url}
                 alt={item.title}
                 width={120}
                 height={90}
@@ -115,7 +115,7 @@ export default function PlaylistQueue({
               <h3 className="truncate font-medium text-gray-900">
                 {item.title}
               </h3>
-              <p className="text-sm text-gray-500">Added by {item.addedBy}</p>
+              <p className="text-sm text-gray-500">Added by {item.added_by}</p>
               <a
                 href={item.url}
                 target="_blank"

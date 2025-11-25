@@ -1,16 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Room, PlaylistItem, Message } from '@prisma/client';
+import { RoomWithRelations } from '@/lib/types';
 import PlaylistQueue from './PlaylistQueue';
 import AddVideoForm from './AddVideoForm';
 import ChatSidebar from './ChatSidebar';
 import NicknamePrompt from './NicknamePrompt';
-
-type RoomWithRelations = Room & {
-  items: PlaylistItem[];
-  messages: Message[];
-};
 
 export default function RoomClient({ room }: { room: RoomWithRelations }) {
   const [nickname, setNickname] = useState('');
@@ -78,7 +73,7 @@ export default function RoomClient({ room }: { room: RoomWithRelations }) {
           <div className="flex-1 overflow-y-auto p-4">
             <PlaylistQueue
               roomCode={room.code}
-              initialItems={room.items}
+              initialItems={room.playlist_items}
               nickname={nickname}
             />
           </div>

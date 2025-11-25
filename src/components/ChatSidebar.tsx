@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Message } from '@prisma/client';
+import { Message } from '@/lib/types';
 import { sendMessage } from '@/lib/actions';
 
 export default function ChatSidebar({
@@ -30,8 +30,8 @@ export default function ChatSidebar({
     const pollInterval = setInterval(async () => {
       try {
         const lastMessage = messages[messages.length - 1];
-        const since = lastMessage?.createdAt
-          ? new Date(lastMessage.createdAt).toISOString()
+        const since = lastMessage?.created_at
+          ? new Date(lastMessage.created_at).toISOString()
           : undefined;
 
         const url = since
@@ -73,7 +73,7 @@ export default function ChatSidebar({
     }
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (date: string | Date) => {
     return new Date(date).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -97,7 +97,7 @@ export default function ChatSidebar({
                   {message.author}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {formatTime(message.createdAt)}
+                  {formatTime(message.created_at)}
                 </span>
               </div>
               <p className="break-words text-sm text-gray-700">

@@ -8,7 +8,7 @@ MusicJam is a collaborative YouTube playlist application built with Next.js 14. 
 
 ## Implemented Features
 
-### 1. Landing Page (`src/app/page.tsx`)
+### 1. Landing Page (`src/app/(marketing)/page.tsx`)
 
 - Clean, responsive design with gradient background
 - "Create Room" button with optional passcode modal
@@ -31,7 +31,7 @@ MusicJam is a collaborative YouTube playlist application built with Next.js 14. 
 - Prompts for passcode if room is protected
 - Verifies passcode against bcrypt hash
 
-### 4. Room Page (`src/app/room/[code]/page.tsx`)
+### 4. Room Page (`src/app/(app)/room/[code]/page.tsx`)
 
 - **Main Component**: `src/components/RoomClient.tsx`
 - Displays room code with copy-to-clipboard functionality
@@ -80,14 +80,27 @@ MusicJam is a collaborative YouTube playlist application built with Next.js 14. 
 
 ### 9. Database Schema
 
-- **File**: `prisma/schema.prisma`
+- **File**: `supabase-schema.sql`
+- **Provider**: Supabase (PostgreSQL)
 - **Room**: Stores room code, optional passcode hash, creation timestamp
 - **PlaylistItem**: YouTube URL, metadata (title, thumbnail), position, added by
 - **Message**: Chat messages with author, text, timestamp
-- SQLite for local development (easy migration to PostgreSQL)
 - Cascade deletes for related items/messages
+- UUID primary keys with automatic generation
+- Indexed foreign keys for performance
 
-### 10. Testing
+### 10. Supabase Integration
+
+- **Client Utilities**: `src/lib/supabase/`
+  - `client.ts` - Browser client for client components
+  - `server.ts` - Server client for server components and actions
+  - `middleware.ts` - Auth session refresh middleware
+- **Type Definitions**: `src/lib/types.ts`
+- Fully type-safe with TypeScript
+- Edge-compatible server client
+- Cookie-based session management
+
+### 11. Testing
 
 - **Framework**: Jest with React Testing Library
 - **Files**: `src/__tests__/youtube.test.ts`, `src/__tests__/room.test.ts`
@@ -95,13 +108,12 @@ MusicJam is a collaborative YouTube playlist application built with Next.js 14. 
 - Unit tests for room code generation and passcode hashing
 - 13 passing tests covering core utilities
 
-### 11. CI/CD
+### 12. CI/CD
 
 - **File**: `.github/workflows/ci.yml`
 - Runs on PR and push to main/develop
 - Tests on Node.js 18.x and 20.x
 - Checks: ESLint, Prettier formatting, TypeScript types, tests, build
-- Verifies Prisma client generation
 
 ## Technical Implementation Details
 
@@ -129,7 +141,11 @@ All actions include proper error handling and return consistent response shapes.
 ### Styling
 
 - Tailwind CSS utility-first approach
-- Custom color palette (primary blues)
+- Custom color palettes:
+  - Original primary blues
+  - Dark neon theme (pink, purple, blue, cyan, green, yellow)
+  - Dark palette (900-500 shades)
+- Custom neon shadow utilities
 - Responsive breakpoints for mobile support
 - Custom scrollbar styling for chat
 - Smooth transitions and hover states
@@ -140,6 +156,7 @@ All actions include proper error handling and return consistent response shapes.
 - Dynamic imports where beneficial
 - Efficient polling with timestamp-based queries
 - Database indexes on frequently queried fields
+- Supabase connection pooling (built-in)
 
 ## File Structure
 
@@ -147,12 +164,15 @@ All actions include proper error handling and return consistent response shapes.
 musicjam/
 ├── src/
 │   ├── app/
-│   │   ├── api/rooms/[code]/messages/route.ts  # Message polling API
-│   │   ├── room/[code]/
-│   │   │   ├── page.tsx                        # Room page (server)
-│   │   │   └── not-found.tsx                   # 404 page
+│   │   ├── (marketing)/                        # Public landing pages
+│   │   │   └── page.tsx                        # Landing page
+│   │   ├── (app)/                              # Application pages
+│   │   │   └── room/[code]/
+│   │   │       ├── page.tsx                    # Room page (server)
+│   │   │       └── not-found.tsx               # 404 page
+│   │   ├── api/
+│   │   │   └── rooms/[code]/messages/route.ts  # Message polling API
 │   │   ├── layout.tsx                          # Root layout
-│   │   ├── page.tsx                            # Landing page
 │   │   └── globals.css                         # Global styles
 │   ├── components/
 │   │   ├── AddVideoForm.tsx                    # Add YouTube URL form
@@ -163,23 +183,27 @@ musicjam/
 │   │   ├── PlaylistQueue.tsx                   # Playlist with drag-drop
 │   │   └── RoomClient.tsx                      # Main room client component
 │   ├── lib/
+│   │   ├── supabase/
+│   │   │   ├── client.ts                       # Browser Supabase client
+│   │   │   ├── server.ts                       # Server Supabase client
+│   │   │   └── middleware.ts                   # Auth middleware
 │   │   ├── actions.ts                          # Server actions
-│   │   └── prisma.ts                           # Prisma client singleton
+│   │   └── types.ts                            # TypeScript type definitions
 │   ├── utils/
 │   │   ├── room.ts                             # Room code & passcode utils
 │   │   └── youtube.ts                          # YouTube URL & oEmbed utils
 │   └── __tests__/
 │       ├── room.test.ts                        # Room utils tests
 │       └── youtube.test.ts                     # YouTube utils tests
-├── prisma/
-│   ├── schema.prisma                           # Database schema
-│   └── migrations/                             # Database migrations
 ├── .github/workflows/ci.yml                    # CI/CD configuration
+├── middleware.ts                               # Next.js middleware (Supabase)
+├── supabase-schema.sql                         # Database schema
 ├── package.json                                # Dependencies & scripts
 ├── tsconfig.json                               # TypeScript config
-├── tailwind.config.js                          # Tailwind config
+├── tailwind.config.js                          # Tailwind config (with neon theme)
 ├── next.config.js                              # Next.js config
-└── README.md                                   # User documentation
+├── README.md                                   # User documentation
+└── QUICKSTART.md                               # Quick start guide
 ```
 
 ## Running the Application
@@ -187,9 +211,17 @@ musicjam/
 ### Development
 
 ```bash
+# Install dependencies
 npm install
-npm run db:generate
-npm run db:migrate
+
+# Set up Supabase project and run schema
+# (see README.md for detailed setup)
+
+# Copy environment variables
+cp .env.example .env.local
+# Add your Supabase credentials to .env.local
+
+# Start development server
 npm run dev
 ```
 
@@ -211,27 +243,31 @@ npm run format:check  # Prettier
 npm run type-check    # TypeScript
 ```
 
-## Migration to PostgreSQL
+## Deployment
 
-For production deployment:
+### Vercel (Recommended)
 
-1. Update `prisma/schema.prisma`:
+1. Push code to GitHub
+2. Import repository on Vercel
+3. Configure environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+4. Deploy!
 
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
+Vercel automatically:
 
-2. Set `DATABASE_URL` environment variable to PostgreSQL connection string
+- Detects Next.js configuration
+- Installs dependencies
+- Builds and optimizes the application
+- Deploys to global CDN
 
-3. Run migrations:
-   ```bash
-   npx prisma migrate deploy
-   ```
+### Supabase Setup
 
-Recommended providers: Neon, Supabase, Railway, or any PostgreSQL host.
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run the SQL from `supabase-schema.sql` in SQL Editor
+3. Copy your project URL and keys
+4. Configure environment variables
 
 ## Future Enhancements (Not in MVP)
 
@@ -241,12 +277,16 @@ Recommended providers: Neon, Supabase, Railway, or any PostgreSQL host.
 - Room expiration/cleanup
 - Search functionality
 - Playlist export
-- Dark mode
 - Mobile app
 - Spotify integration
+- Row Level Security (RLS) policies
 
 ## Acceptance Criteria - ALL MET ✅
 
+✅ Prisma fully removed  
+✅ Supabase clients available in shared lib  
+✅ Environment docs include Supabase + Vercel guidance  
+✅ CI scripts still succeed  
 ✅ Users can create a room and join via code  
 ✅ Optional passcode enforced with bcrypt  
 ✅ Users can add valid YouTube links  
@@ -254,16 +294,15 @@ Recommended providers: Neon, Supabase, Railway, or any PostgreSQL host.
 ✅ Users can reorder and remove items  
 ✅ Basic chat works with polling  
 ✅ No third-party integrations (except YouTube oEmbed)  
-✅ Runs locally with `npm run dev` and SQLite  
-✅ CI passes (lint, type-check, test, build)  
+✅ Runs locally with `npm run dev`  
 ✅ Next.js 14 with App Router  
 ✅ TypeScript throughout  
-✅ Tailwind CSS styling  
-✅ Prisma ORM with SQLite  
+✅ Tailwind CSS styling with dark neon theme  
+✅ Supabase (PostgreSQL) database  
 ✅ Anonymous nicknames (localStorage)  
 ✅ Clean, responsive UI  
-✅ Comprehensive README
+✅ Comprehensive README and QUICKSTART
 
 ## Conclusion
 
-The MusicJam MVP is feature-complete, production-ready, and follows Next.js best practices. All requirements from the ticket have been implemented with clean, maintainable code that's ready for deployment.
+The MusicJam MVP has been successfully migrated from Prisma/SQLite to Supabase (PostgreSQL). The application is feature-complete, production-ready, and follows Next.js best practices. All requirements from the ticket have been implemented with clean, maintainable code that's ready for deployment to Vercel or other hosting platforms.

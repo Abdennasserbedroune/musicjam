@@ -15,8 +15,8 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: Prisma ORM with SQLite (easy to swap to PostgreSQL)
+- **Styling**: Tailwind CSS (with dark neon theme)
+- **Database**: Supabase (PostgreSQL)
 - **Authentication**: Anonymous nicknames per room (stored in localStorage)
 - **Video Metadata**: YouTube oEmbed API (no API key required)
 - **State Management**: Server Actions + Simple Polling
@@ -27,6 +27,7 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 
 - Node.js 18.x or 20.x
 - npm or pnpm
+- Supabase account (free tier available at [supabase.com](https://supabase.com))
 
 ### Installation
 
@@ -43,22 +44,62 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
    npm install
    ```
 
-3. Set up environment variables:
+3. Set up Supabase:
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Go to Project Settings → API
+   - Copy your project URL and anon key
+
+4. Set up environment variables:
 
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
    ```
 
-4. Generate Prisma client:
+   Update `.env.local` with your Supabase credentials:
 
-   ```bash
-   npm run db:generate
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
 
-5. Create the database and run migrations:
+5. Create the database schema:
 
-   ```bash
-   npm run db:migrate
+   Run the following SQL in your Supabase SQL Editor:
+
+   ```sql
+   -- Create rooms table
+   CREATE TABLE rooms (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     code TEXT UNIQUE NOT NULL,
+     passcode_hash TEXT,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- Create playlist_items table
+   CREATE TABLE playlist_items (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+     url TEXT NOT NULL,
+     title TEXT NOT NULL,
+     thumbnail_url TEXT,
+     added_by TEXT NOT NULL,
+     position INTEGER NOT NULL,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- Create messages table
+   CREATE TABLE messages (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+     author TEXT NOT NULL,
+     text TEXT NOT NULL,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- Create indexes
+   CREATE INDEX idx_playlist_items_room_id ON playlist_items(room_id);
+   CREATE INDEX idx_messages_room_id ON messages(room_id);
    ```
 
 6. Start the development server:
@@ -78,10 +119,6 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 - `npm run format` - Format code with Prettier
 - `npm run format:check` - Check code formatting
 - `npm run type-check` - Run TypeScript type checking
-- `npm run db:generate` - Generate Prisma client
-- `npm run db:push` - Push schema changes to database
-- `npm run db:migrate` - Create and run migrations
-- `npm run db:studio` - Open Prisma Studio
 - `npm test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
 
@@ -89,100 +126,93 @@ A collaborative YouTube playlist application built with Next.js 14. Create rooms
 
 ```
 ├── src/
-│   ├── app/              # Next.js App Router pages
+│   ├── app/
+│   │   ├── (marketing)/  # Public landing pages
+│   │   ├── (app)/        # App pages (rooms)
 │   │   ├── api/          # API routes
-│   │   ├── room/         # Room pages
 │   │   ├── layout.tsx    # Root layout
-│   │   ├── page.tsx      # Landing page
 │   │   └── globals.css   # Global styles
 │   ├── components/       # React components
-│   ├── lib/              # Library code (Prisma, server actions)
+│   ├── lib/
+│   │   ├── supabase/     # Supabase client utilities
+│   │   ├── actions.ts    # Server actions
+│   │   └── types.ts      # TypeScript types
 │   └── utils/            # Utility functions
-├── prisma/
-│   └── schema.prisma     # Database schema
 └── __tests__/            # Test files
 ```
 
 ## Database Schema
 
-### Room
+### rooms
 
-- `id`: Unique identifier
+- `id`: UUID primary key
 - `code`: 6-character room code (e.g., "ABC123")
-- `passcodeHash`: Optional bcrypt hash of passcode
-- `createdAt`: Creation timestamp
+- `passcode_hash`: Optional bcrypt hash of passcode
+- `created_at`: Creation timestamp
 
-### PlaylistItem
+### playlist_items
 
-- `id`: Unique identifier
-- `roomId`: Reference to Room
+- `id`: UUID primary key
+- `room_id`: Reference to rooms
 - `url`: YouTube video URL
 - `title`: Video title (from oEmbed)
-- `thumbnailUrl`: Thumbnail URL (from oEmbed)
-- `addedBy`: Nickname of user who added it
+- `thumbnail_url`: Thumbnail URL (from oEmbed)
+- `added_by`: Nickname of user who added it
 - `position`: Order in playlist
-- `createdAt`: Creation timestamp
+- `created_at`: Creation timestamp
 
-### Message
+### messages
 
-- `id`: Unique identifier
-- `roomId`: Reference to Room
+- `id`: UUID primary key
+- `room_id`: Reference to rooms
 - `author`: Nickname of message author
 - `text`: Message content
-- `createdAt`: Creation timestamp
+- `created_at`: Creation timestamp
 
 ## Deployment
 
 ### Vercel (Recommended)
 
-1. Install Vercel CLI:
+1. Push your code to GitHub
 
-   ```bash
-   npm i -g vercel
-   ```
+2. Import your repository on [Vercel](https://vercel.com)
 
-2. Deploy:
+3. Configure environment variables in Vercel:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
 
-   ```bash
-   vercel
-   ```
+4. Deploy! Vercel will automatically:
+   - Detect Next.js configuration
+   - Install dependencies
+   - Build and optimize the application
+   - Deploy to a global CDN
 
-3. Set up PostgreSQL database (recommended for production):
-   - Use [Neon](https://neon.tech/) or [Supabase](https://supabase.com/) for free PostgreSQL
-   - Update `DATABASE_URL` in Vercel environment variables
-   - Update `prisma/schema.prisma` datasource provider to `postgresql`
-   - Run migrations: `npx prisma migrate deploy`
+#### Vercel Deployment Best Practices
 
-### Docker
+- Enable automatic deployments for your main branch
+- Use Preview Deployments for PRs to test changes before merging
+- Set up Custom Domains in Project Settings
+- Monitor performance with Vercel Analytics
+- Use environment variables for different stages (development, preview, production)
 
-A Dockerfile can be added for containerized deployment. The application works well with:
+### Supabase Configuration
+
+Your Supabase project is production-ready out of the box, but consider these optimizations:
+
+- **Database Backups**: Enable automatic backups (free on paid plans)
+- **Connection Pooling**: Already enabled by default
+- **Row Level Security**: Currently tables are publicly accessible; add RLS policies if needed
+- **Edge Functions**: Consider using Supabase Edge Functions for real-time features
+
+### Alternative Platforms
+
+The application works well with:
 
 - Railway
 - Render
 - Fly.io
-- Any platform supporting Node.js
-
-### Database Migration (SQLite → PostgreSQL)
-
-1. Update `prisma/schema.prisma`:
-
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-
-2. Set `DATABASE_URL` in `.env`:
-
-   ```
-   DATABASE_URL="postgresql://user:password@host:5432/dbname"
-   ```
-
-3. Create and run migrations:
-   ```bash
-   npm run db:migrate
-   ```
+- Any platform supporting Node.js and PostgreSQL
 
 ## CI/CD
 
@@ -223,6 +253,21 @@ GitHub Actions workflow runs on every PR and push to main/develop:
 - Clear entire playlist
 - Persistent ordering
 
+## Theme Customization
+
+The application includes a dark neon theme with customizable tokens in `tailwind.config.js`:
+
+```javascript
+neon: {
+  pink: '#ff006e',
+  purple: '#8338ec',
+  blue: '#3a86ff',
+  cyan: '#00f5ff',
+  green: '#06ffa5',
+  yellow: '#ffbe0b',
+}
+```
+
 ## Browser Support
 
 - Chrome/Edge (latest)
@@ -246,4 +291,4 @@ MIT
 
 - YouTube oEmbed API for metadata
 - Next.js team for the amazing framework
-- Prisma for the excellent ORM
+- Supabase for the excellent backend platform
