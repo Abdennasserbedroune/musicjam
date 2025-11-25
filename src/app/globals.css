@@ -4,7 +4,41 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+@layer components {
+  .neon-text {
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+
+  .neon-border {
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #A855F7, #EC4899, #06B6D4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .floating-label {
+    @apply absolute left-3 top-3 text-gray-400 transition-all duration-200 pointer-events-none;
+  }
+
+  .floating-label-active {
+    @apply text-xs -translate-y-5 text-neon-purple;
+  }
+
+  .input-neon {
+    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-4 py-3 w-full transition-all duration-200;
+    @apply focus:outline-none focus:border-neon-purple focus:ring-2 focus:ring-neon-purple/50;
   }
 }
 
@@ -14,14 +48,14 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-gray-800;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded;
+    @apply bg-gray-700 rounded;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
+    @apply bg-gray-600;
   }
 }
